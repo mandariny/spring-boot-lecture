@@ -6,9 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+import study.spring_data_jpa_practice.dto.MemberDto;
 import study.spring_data_jpa_practice.entity.Member;
+import study.spring_data_jpa_practice.entity.Team;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Rollback(value = false)
 class MemberRepositoryTest {
     @Autowired MemberRepository memberRepository;
+    @Autowired TeamRepository teamRepository;
 
     @Test
     public void testMember() {
@@ -60,5 +65,102 @@ class MemberRepositoryTest {
         // 카운트 검증
         count = memberRepository.count();
         assertThat(count).isEqualTo(0);
+    }
+
+    @Test
+    public void findByUsernameAndAgeGreaterThan() {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("AAA", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findByUsernameAndAgeGreaterThan("AAA", 15);
+
+        assertThat(result.get(0).getUsername()).isEqualTo("AAA");
+        assertThat(result.get(0).getAge()).isEqualTo(20);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+//    @Test
+//    public void testNamedQuery() {
+//        Member m1 = new Member("AAA", 10);
+//        Member m2 = new Member("BBB", 20);
+//        memberRepository.save(m1);
+//        memberRepository.save(m2);
+//
+//        List<Member> result = memberRepository.findByUsername("AAA");
+//        Member findMember = result.get(0);
+//
+//        assertThat(findMember).isEqualTo(m1);
+//    }
+
+    @Test
+    public void testQuery() {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findUser("AAA", 10);
+        Member findMember = result.get(0);
+
+        assertThat(findMember).isEqualTo(m1);
+    }
+
+    @Test
+    public void findUsernameList() {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<String> usernameList = memberRepository.findUsernameList();
+        for (String s : usernameList) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    public void findMemberDto() {
+        Team team = new Team("teamA");
+        teamRepository.save(team);
+
+        Member m1 = new Member("AAA", 10);
+        m1.setTeam(team);
+        memberRepository.save(m1);
+
+        List<MemberDto> memberDto = memberRepository.findMemberDto();
+        for (MemberDto dto : memberDto) {
+            System.out.println("dto = " + dto);
+        }
+
+    }
+
+    @Test
+    public void findByNames() {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findByNames(Arrays.asList("AAA", "BBB"));
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+    }
+    @Test
+    public void testReturnType() {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> aaa1 = memberRepository.findListByUsername("AAA");
+        Member aaa2 = memberRepository.findMemberByUsername("AAA");
+        Optional<Member> aaa3 = memberRepository.findOptionalByUsername("AAA");
+
+        System.out.println("findMember = " + aaa1);
+        System.out.println("findMember = " + aaa2);
+        System.out.println("findMember = " + aaa3.get());
     }
 }

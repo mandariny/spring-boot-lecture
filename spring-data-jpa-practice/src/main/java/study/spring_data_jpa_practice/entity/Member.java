@@ -8,6 +8,10 @@ import lombok.*;
 @Getter @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 // team은 출력하면 안됨. 연관관계를 타고 출력하게 돼 무한루프에 빠질 수 있음
+//@NamedQuery(
+//        name="Member.findByUsername",
+//        query="select m from Member m where m.username = :username"
+//)
 @ToString(of = {"id", "username", "age"})
 public class Member {
     @Id @GeneratedValue
@@ -36,6 +40,11 @@ public class Member {
         if (team != null) {
             changeTeam(team);
         }
+    }
+
+    public Member(String username, int age) {
+        this.username = username;
+        this.age = age;
     }
 
 //    setter보다는 필요한 경우 명확한 메소드 이름으로 기능을 구현하는 것이 좋음
