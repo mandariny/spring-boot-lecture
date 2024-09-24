@@ -4,6 +4,10 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.spring_data_jpa_practice.dto.MemberDto;
@@ -162,5 +166,54 @@ class MemberRepositoryTest {
         System.out.println("findMember = " + aaa1);
         System.out.println("findMember = " + aaa2);
         System.out.println("findMember = " + aaa3.get());
+    }
+
+    @Test
+    public void paging() {
+        // given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age = 10;
+
+        // 0번 페이지부터 카운드
+        // 0페이지에서 3개 가져오기
+        // Sorting 조건은 옵션
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        // when
+        Page<Member> page = memberRepository.findByAge(age, pageRequest);
+//        Slice<Member> page = memberRepository.findByAge(age, pageRequest);
+//        List<Member> page = memberRepository.findByAge(age, pageRequest);
+
+        // Entity는 절~~~대 API로 넘기면 안 됨! DTO로 변환한 후 넘기기
+        // Entity에서 쉽게 DTO로 바꾸는 법
+        // Page는 유지하면서 DTO로 반환해도 괜찮음 -> 내부 컨텐츠 & totalPage, totalElement 등도 json으로 변환돼서 나감
+        Page<MemberDto> toMap = page.map(m -> new MemberDto(m.getId(), m.getUsername(), null));
+
+        // then
+//        List<Member> content = page.getContent();
+        // 반환 타입이 Page라 totalCount를 세는 쿼리를 자동적으로 날림
+//        long totalElements = page.getTotalElements();
+//        for (Member member : content) {
+//            System.out.println("member = " + member);
+//        }
+//        System.out.println("totalElements = " + totalElements);
+//        assertThat(content.size()).isEqualTo(3);
+//        assertThat(page.getTotalElements()).isEqualTo(5);
+        // 페이지 번호
+//        assertThat(page.getNumber()).isEqualTo(0);
+        // 전체 페이지 수
+//        assertThat(page.getTotalPages()).isEqualTo(2);
+        // 첫 번쨰 페이지인지
+//        assertThat(page.isFirst()).isTrue();
+        // 다음 페이지가 있는지
+//        assertThat(page.hasNext()).isTrue();
+        for (Member member : page) {
+            System.out.println("member = " + member);
+        }
     }
 }
