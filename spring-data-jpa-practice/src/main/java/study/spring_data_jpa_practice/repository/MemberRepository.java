@@ -3,6 +3,7 @@ package study.spring_data_jpa_practice.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -76,5 +77,28 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Modifying(clearAutomatically = true) // JPA의 excuteUpdate 호출을 위해 필요. 없으면 getResultList or getSingleResult 호출함
     @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
     int bulkAgePlus(@Param("age") int age);
+
+    // 멤버를 조회할 때 팀까지 한 번에 정보를 긁어 옴 -> Fetch Join
+    // Fetch Join은 기본적으로 Left Outer Join
+    // 주로 사용 1
+    @Query("select m from Member m left join fetch m.team")
+    List<Member> findMemberFetchJoin();
+
+    // 자동적으로 Fetch Join 처리
+    @Override
+    @EntityGraph(attributePaths = {"team"})
+    List<Member> findAll();
+
+    // JPQL을 짠 후 Fetch Join만 추가하고 싶은 경우 함꼐 사용 가능
+    @EntityGraph(attributePaths = {"team"})
+    @Query("select m from Member m")
+    List<Member> findMemberEntityGraph();
+
+    // 메소드 이름으로 쿼리를 생성하는 경우에도 Fetch Join 추가 가능
+    // 주로 사용 2
+    @EntityGraph(attributePaths = {"team"})
+    // NamedEntityGraph 실행
+//    @EntityGraph("Member.all")
+    List<Member> findEntityGraphByUsername(@Param("username") String username);
 }
 

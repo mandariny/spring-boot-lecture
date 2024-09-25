@@ -8,11 +8,14 @@ import lombok.*;
 @Getter @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 // team은 출력하면 안됨. 연관관계를 타고 출력하게 돼 무한루프에 빠질 수 있음
+@ToString(of = {"id", "username", "age"})
 //@NamedQuery(
 //        name="Member.findByUsername",
 //        query="select m from Member m where m.username = :username"
 //)
-@ToString(of = {"id", "username", "age"})
+// JPA 표준 스펙
+// 자주 사용하진 않음
+@NamedEntityGraph(name = "Member.all", attributeNodes = @NamedAttributeNode("team"))
 public class Member {
     @Id @GeneratedValue
     @Column(name = "member_id")
@@ -22,6 +25,7 @@ public class Member {
 
 //    Member와 Team은 N:1 관계. N 쪽에서 FK를 가지고 있어야 함
 //    JPA의 모든 연관관계는 지연로딩으로 세팅해야 성능 최적화가 쉬움
+    // Member를 조회하는 시점에 Team은 가짜 객체로 만들어놓고, 실제로 Team을 조회할 일이 생길 경우 추가로 조회
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;

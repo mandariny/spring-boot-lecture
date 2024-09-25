@@ -235,6 +235,7 @@ class MemberRepositoryTest {
 
         // bulk update 전에 영속성 컨텍스트 내의 데이터는 flush로 먼저 반영함
         // 데이터가 아직 영속성 컨텍스트에 남아있어 bulk update가 반영된 DB와 다른 40살이 뜨게 됨!
+        // JPA와 MyBatis, JDBC 등 다른 툴을 함께 사용할 경우에도 DB와 영속성 컨택스트가 달라지는 문제가 발생할 수 있음 -> 잘 초기화해줘야 함
         List<Member> result = memberRepository.findByUsername("member5");
         Member member5 = result.get(0);
         System.out.println("member5 = " + member5);
@@ -249,5 +250,38 @@ class MemberRepositoryTest {
 
         // then
         assertThat(resultCount).isEqualTo(3);
+    }
+
+    @Test
+    public void findMemberLazy() {
+        // given
+
+        // member1 -> teamA
+        // member2 -> teamB
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member2", 10, teamB);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        em.flush();
+        em.clear();
+
+        // when
+
+        // N + 1 문제 -> 1번 쿼리 한 후 N개의 결과가 나왔을 때, N개만큼 더 쿼리를 날려야하는 경우 -> 1 + N번의 쿼리로 네트워크를 타야해 성능이 낮음
+//        List<Member> members = memberRepository.findAll();
+//        List<Member> members = memberRepository.findMemberFetchJoin();
+        List<Member> members = memberRepository.findEntityGraphByUsername("member1");
+
+        for (Member member : members) {
+            System.out.println("member = " + member.getUsername());
+            System.out.println("member.teamClass = " + member.getTeam().getClass());
+            System.out.println("member.team = " + member.getTeam().getName());
+        }
     }
 }
