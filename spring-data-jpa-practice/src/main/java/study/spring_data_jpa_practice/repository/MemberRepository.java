@@ -1,12 +1,10 @@
 package study.spring_data_jpa_practice.repository;
 
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import study.spring_data_jpa_practice.dto.MemberDto;
 import study.spring_data_jpa_practice.entity.Member;
@@ -100,5 +98,17 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // NamedEntityGraph 실행
 //    @EntityGraph("Member.all")
     List<Member> findEntityGraphByUsername(@Param("username") String username);
+
+    /*
+    *
+    * JPA HINT
+    * SQL HINT와는 별개
+    * 실무에서 성능이 낮아지는 이유는 쿼리 자체가 복잡한 경우! ReadOnly 쓴다고 엄청 향상되진 않음
+    * 공수를 들여서 @QueryHints를 다 넣을 필욘 없고, 정말 주용하고 트래픽이 많은 API 몇 개에만 사용 -> 성능 테스트로 결정
+    * 조회 성능이 그정도로 낮아진다면 앞 단에 Redis 등의 캐시를 두는 것이 나음
+    *
+    */
+    @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Member findReadOnlyByUsername(String username);
 }
 

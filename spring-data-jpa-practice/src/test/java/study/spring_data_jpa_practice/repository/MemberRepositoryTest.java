@@ -284,4 +284,28 @@ class MemberRepositoryTest {
             System.out.println("member.team = " + member.getTeam().getName());
         }
     }
+
+    @Test
+    public void queryHint() {
+        // given
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        em.flush();
+        em.clear();
+
+        // when
+//        Member findMember = memberRepository.findById(member1.getId()).get();
+//        findMember.setUsername("member2");
+
+        // 변경 감지 -> 원본 필요 (객체를 2개 관리하는 격) -> 메모리 많이 사용 -> 비효율 적
+        // 변경 감지 과정도 비용 소모
+        // 변경할 일 없을 경우엔 ReadOnly로 최적화! -> JPA의 HINT로 Hibernate의 기능 활용
+//        em.flush();
+
+        // 변경이 안 일어남!
+        Member findMember = memberRepository.findReadOnlyByUsername("member1");
+        findMember.setUsername("member2");
+
+        em.flush();
+    }
 }
