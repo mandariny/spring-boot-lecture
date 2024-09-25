@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import study.spring_data_jpa_practice.dto.MemberDto;
@@ -32,6 +33,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     *   - 오류(오타 등)를 컴파일 시점에 발견하기 쉬움
     *   - 이름이 없는 NamedQuery라고 생각
     */
+    List<Member> findByUsername(String username);
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
 
     // NamedQuery
@@ -69,5 +71,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Page<Member> findByAge(int age, Pageable pageable);
 //    Slice<Member> findByAge(int age, Pageable pageable);
 //    List<Member> findByAge(int age, Pageable pageable);
+
+    // JPA에서 bulk연산은 영속성 컨텍스트를 거치지 않고 바로 DB에 접근 -> 아직 반영되지 않은 데이터와 문제가 생길 수 있음
+    @Modifying(clearAutomatically = true) // JPA의 excuteUpdate 호출을 위해 필요. 없으면 getResultList or getSingleResult 호출함
+    @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
 }
 

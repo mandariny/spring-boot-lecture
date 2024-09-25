@@ -1,5 +1,7 @@
 package study.spring_data_jpa_practice.repository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class MemberRepositoryTest {
     @Autowired MemberRepository memberRepository;
     @Autowired TeamRepository teamRepository;
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember() {
@@ -215,5 +219,35 @@ class MemberRepositoryTest {
         for (Member member : page) {
             System.out.println("member = " + member);
         }
+    }
+
+    @Test
+    public void bulkUpdate() {
+        // given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        // when
+        int resultCount = memberRepository.bulkAgePlus(20);
+
+        // bulk update 전에 영속성 컨텍스트 내의 데이터는 flush로 먼저 반영함
+        // 데이터가 아직 영속성 컨텍스트에 남아있어 bulk update가 반영된 DB와 다른 40살이 뜨게 됨!
+        List<Member> result = memberRepository.findByUsername("member5");
+        Member member5 = result.get(0);
+        System.out.println("member5 = " + member5);
+
+        // bluk update 이후 영속성 컨텍스트 날려줘야 함
+        // @Modifying에 clearAutomatically 옵션 사용!
+//        em.flush();
+//        em.clear();
+        result = memberRepository.findByUsername("member5");
+        member5 = result.get(0);
+        System.out.println("member5 = " + member5);
+
+        // then
+        assertThat(resultCount).isEqualTo(3);
     }
 }

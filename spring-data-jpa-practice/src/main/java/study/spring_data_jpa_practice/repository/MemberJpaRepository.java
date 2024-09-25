@@ -69,4 +69,12 @@ public class MemberJpaRepository {
                 .setParameter("age", age)
                 .getSingleResult();
     }
+
+    // 한 번에 여러 업데이트를 처리해야하는 경우
+    // 변화 감지 기능은 단 건에 적용됨
+    public int bulkAgePlus(int age) {
+        return em.createQuery("update Member m set m.age = m.age + 1 where m.age >= :age")
+                .setParameter("age", age)
+                .executeUpdate();
+    }
 }
