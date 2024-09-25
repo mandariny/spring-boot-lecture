@@ -1,5 +1,6 @@
 package study.spring_data_jpa_practice.repository;
 
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -110,5 +111,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     */
     @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Member findReadOnlyByUsername(String username);
+
+    // JPA가 제공하는 Lock 기능 -> DB Dialect 반영해서 Lock을 걸어줌
+    // 실시간 트래픽이 많은 서비스에서는 사용 지양
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Member> findLockByUsername(String username);
 }
 
