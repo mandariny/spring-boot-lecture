@@ -16,7 +16,8 @@ import lombok.*;
 // JPA 표준 스펙
 // 자주 사용하진 않음
 @NamedEntityGraph(name = "Member.all", attributeNodes = @NamedAttributeNode("team"))
-public class Member {
+// Auditing 기능 추가
+public class Member extends JpaBaseEntity{
     @Id @GeneratedValue
     @Column(name = "member_id")
     private Long id;
