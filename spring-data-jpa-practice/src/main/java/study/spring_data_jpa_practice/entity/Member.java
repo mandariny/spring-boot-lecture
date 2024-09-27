@@ -2,6 +2,9 @@ package study.spring_data_jpa_practice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 // 실무에서는 Entity에 되도록 Setter를 사용하지 않음
@@ -17,10 +20,16 @@ import lombok.*;
 // 자주 사용하진 않음
 @NamedEntityGraph(name = "Member.all", attributeNodes = @NamedAttributeNode("team"))
 // Auditing 기능 추가
-public class Member extends JpaBaseEntity{
+public class Member extends BaseEntity{
     @Id @GeneratedValue
     @Column(name = "member_id")
     private Long id;
+
+// 하마나 필요할 경우 extends 안하고 따로 등록해줘도 됨
+//    @CreatedDate
+//    @Column(updatable = false)
+//    private LocalDateTime createdDate;
+
     private String username;
     private int age;
 
